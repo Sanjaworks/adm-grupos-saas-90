@@ -1,3 +1,4 @@
+
 import React from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,8 +15,12 @@ import { Badge } from "@/components/ui/badge";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 
 export const Settings = () => {
-  // Alterando o tipo para ser mais específico, evitando os erros de comparação
-  const currentPlan: 'free' | 'basic' | 'premium' = "premium"; // Simulação de plano atual
+  // Define plan type and current plan
+  type PlanType = 'free' | 'basic' | 'premium';
+  const currentPlan: PlanType = "premium"; // Simulação de plano atual
+  
+  // Helper function to check if plans match to avoid type comparison issues
+  const isPlan = (plan: PlanType): boolean => currentPlan === plan;
   
   return (
     <MainLayout 
@@ -450,16 +455,16 @@ export const Settings = () => {
                   </div>
                   
                   <Badge variant={
-                    currentPlan === "free" ? "secondary" : 
-                    currentPlan === "basic" ? "outline" : 
+                    isPlan("free") ? "secondary" : 
+                    isPlan("basic") ? "outline" : 
                     "default"
                   } className={
-                    currentPlan === "free" ? "bg-gray-600/20" : 
-                    currentPlan === "basic" ? "bg-neon-green/20 text-neon-green" : 
+                    isPlan("free") ? "bg-gray-600/20" : 
+                    isPlan("basic") ? "bg-neon-green/20 text-neon-green" : 
                     "bg-neon-purple"
                   }>
-                    {currentPlan === "free" ? "Free" : 
-                     currentPlan === "basic" ? "Básico" : 
+                    {isPlan("free") ? "Free" : 
+                     isPlan("basic") ? "Básico" : 
                      "Premium"}
                   </Badge>
                 </div>
@@ -521,8 +526,8 @@ export const Settings = () => {
                           Moderação básica
                         </li>
                       </ul>
-                      <Button variant="outline" className="w-full" disabled={currentPlan === "free"}>
-                        {currentPlan === "free" ? "Plano Atual" : "Selecionar"}
+                      <Button variant="outline" className="w-full" disabled={isPlan("free")}>
+                        {isPlan("free") ? "Plano Atual" : "Selecionar"}
                       </Button>
                     </CardContent>
                   </Card>
@@ -557,8 +562,8 @@ export const Settings = () => {
                           Relatórios básicos
                         </li>
                       </ul>
-                      <Button variant="outline" className="w-full border-neon-green text-neon-green" disabled={currentPlan === "basic"}>
-                        {currentPlan === "basic" ? "Plano Atual" : "Selecionar"}
+                      <Button variant="outline" className="w-full border-neon-green text-neon-green" disabled={isPlan("basic")}>
+                        {isPlan("basic") ? "Plano Atual" : "Selecionar"}
                       </Button>
                     </CardContent>
                   </Card>
@@ -597,8 +602,8 @@ export const Settings = () => {
                           Suporte prioritário
                         </li>
                       </ul>
-                      <Button className="w-full bg-neon-purple hover:bg-neon-purple/80" disabled={currentPlan === "premium"}>
-                        {currentPlan === "premium" ? "Plano Atual" : "Selecionar"}
+                      <Button className="w-full bg-neon-purple hover:bg-neon-purple/80" disabled={isPlan("premium")}>
+                        {isPlan("premium") ? "Plano Atual" : "Selecionar"}
                       </Button>
                     </CardContent>
                   </Card>
