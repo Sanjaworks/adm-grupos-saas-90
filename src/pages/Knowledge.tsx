@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { BookOpen, Search, Video, FileText, MessageSquare, Star, Play, CheckCircle, Users, Calendar, BarChart2, Bell, Settings } from 'lucide-react';
+import { BookOpen, Search, Video, FileText, MessageSquare, Star, Play, CheckCircle, Users, Calendar, BarChart2, Bell, Settings, Shield } from 'lucide-react';
 import { 
   NavigationMenu,
   NavigationMenuContent,

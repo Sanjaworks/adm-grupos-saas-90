@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon, Clock, Plus, Check, Calendar as CalendarIcon2, MessageSquare, Bell, Info, User, Users, Tag, X, FileText, Filter, Send } from 'lucide-react';
+import { CalendarIcon, Clock, Plus, Check, Calendar as CalendarIcon2, MessageSquare, Bell, Info, User, Users, Tag, X, FileText, Filter, Send, Search } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Label } from "@/components/ui/label";

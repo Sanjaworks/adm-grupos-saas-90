@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger, navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 
 export const Settings = () => {
-  const currentPlan = "premium"; // Simulação de plano atual
+  // Alterando o tipo para ser mais específico, evitando os erros de comparação
+  const currentPlan: 'free' | 'basic' | 'premium' = "premium"; // Simulação de plano atual
   
   return (
     <MainLayout 

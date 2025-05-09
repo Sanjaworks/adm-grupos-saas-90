@@ -287,7 +287,7 @@ export class EvolutionApiClient {
     return this.request<any>(`/group/remove-participant/${instanceName}`, {
       method: "POST",
       body: JSON.stringify({
-        groupId: `${group}@g.us`,
+        groupId: `${groupId}@g.us`,
         partiticipantId: `${participantId}@c.us`
       })
     });
