@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,13 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// Custom colors for our theme
+				neon: {
+					green: '#39FF14',
+					purple: '#9B30FF',
+					blue: '#1EAEDB',
+				},
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -84,11 +91,31 @@ export default {
 					to: {
 						height: '0'
 					}
+				},
+				'pulse-neon': {
+					'0%, 100%': { 
+						opacity: '1',
+						boxShadow: '0 0 10px #39FF14, 0 0 20px #39FF14, 0 0 30px #39FF14'
+					},
+					'50%': { 
+						opacity: '0.8',
+						boxShadow: '0 0 15px #39FF14, 0 0 25px #39FF14, 0 0 35px #39FF14'
+					},
+				},
+				'glow': {
+					'0%, 100%': { 
+						boxShadow: '0 0 5px rgba(57, 255, 20, 0.7), 0 0 10px rgba(57, 255, 20, 0.5)'
+					},
+					'50%': { 
+						boxShadow: '0 0 15px rgba(57, 255, 20, 0.9), 0 0 20px rgba(57, 255, 20, 0.7)'
+					},
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'pulse-neon': 'pulse-neon 2s infinite',
+				'glow': 'glow 1.5s infinite'
 			}
 		}
 	},
