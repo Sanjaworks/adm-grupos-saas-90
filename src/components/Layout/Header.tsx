@@ -3,6 +3,7 @@ import React from 'react';
 import { Bell, Search } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 type HeaderProps = {
   title: string;
@@ -25,6 +26,8 @@ export const Header = ({ title, description }: HeaderProps) => {
             className="pl-10 w-[200px] lg:w-[300px] bg-background border-muted"
           />
         </div>
+        
+        <ThemeToggle />
         
         <Button variant="outline" size="icon" className="relative">
           <Bell size={18} />

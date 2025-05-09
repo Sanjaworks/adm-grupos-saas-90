@@ -10,7 +10,9 @@ import {
   LayoutDashboard,
   Bell,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Send,
+  Link
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -58,6 +60,9 @@ export const Sidebar = ({ className }: SidebarProps) => {
             { name: "Dashboard", path: "/", icon: LayoutDashboard },
             { name: "Grupos", path: "/groups", icon: Users },
             { name: "Membros", path: "/members", icon: Users },
+            { name: "Atendimento", path: "/chat", icon: MessageSquare },
+            { name: "Disparo em Massa", path: "/mass-sending", icon: Send },
+            { name: "Conexão", path: "/connection", icon: Link },
             { name: "Moderação IA", path: "/moderation", icon: MessageSquare },
             { name: "Agendamentos", path: "/scheduling", icon: Calendar },
             { name: "Relatórios", path: "/reports", icon: BarChart2 },
