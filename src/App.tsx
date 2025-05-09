@@ -15,6 +15,10 @@ import Chat from "./pages/Chat";
 import MassSending from "./pages/MassSending";
 import Connection from "./pages/Connection";
 import Moderation from "./pages/Moderation";
+import Reports from "./pages/Reports";
+import Settings from "./pages/Settings";
+import Knowledge from "./pages/Knowledge";
+import Scheduling from "./pages/Scheduling";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +40,10 @@ const App = () => (
               <Route path="/mass-sending" element={<MassSending />} />
               <Route path="/connection" element={<Connection />} />
               <Route path="/moderation" element={<Moderation />} />
+              <Route path="/reports" element={<Reports />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/knowledge" element={<Knowledge />} />
+              <Route path="/scheduling" element={<Scheduling />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
