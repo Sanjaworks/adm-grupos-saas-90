@@ -1,14 +1,7 @@
 
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/integrations/supabase/client';
 
-// Estas variáveis deveriam vir de variáveis de ambiente
-// No momento, estamos usando placeholders para desenvolvimento
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://sua-url-do-supabase.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'sua-chave-publica-do-supabase';
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
-
-// Tipos para os dados do Supabase
+// Types for the data from Supabase
 export interface Profile {
   id: string;
   updated_at?: string;
@@ -63,7 +56,7 @@ export interface Message {
   reach: number;
 }
 
-// Funções de autenticação
+// Authentication functions
 export const signIn = async ({ email, password }: { email: string; password: string }) => {
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
@@ -94,4 +87,4 @@ export const getCurrentUser = async () => {
   return { user: null, profile: null };
 };
 
-// Quando o projeto for conectado ao Supabase, serão implementadas as funções para manipulação de dados
+// Data functions will be implemented using our service files

@@ -6,8 +6,8 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redireciona para o Dashboard
-    navigate("/");
+    // Redirect to the landing page
+    navigate("/landing");
   }, [navigate]);
 
   return (

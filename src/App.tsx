@@ -20,6 +20,7 @@ import Settings from "./pages/Settings";
 import Knowledge from "./pages/Knowledge";
 import Scheduling from "./pages/Scheduling";
 import NotFound from "./pages/NotFound";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +35,7 @@ const App = () => (
             <Routes>
               <Route path="/login" element={<Login />} />
               <Route path="/" element={<Dashboard />} />
+              <Route path="/landing" element={<LandingPage />} />
               <Route path="/groups" element={<Groups />} />
               <Route path="/members" element={<Members />} />
               <Route path="/chat" element={<Chat />} />

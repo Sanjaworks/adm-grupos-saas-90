@@ -9,7 +9,169 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      connections: {
+        Row: {
+          battery: number | null
+          connected_at: string | null
+          created_at: string
+          id: string
+          instance_name: string
+          last_sync: string | null
+          name: string
+          number: string | null
+          status: string
+        }
+        Insert: {
+          battery?: number | null
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          instance_name: string
+          last_sync?: string | null
+          name: string
+          number?: string | null
+          status?: string
+        }
+        Update: {
+          battery?: number | null
+          connected_at?: string | null
+          created_at?: string
+          id?: string
+          instance_name?: string
+          last_sync?: string | null
+          name?: string
+          number?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
+      groups: {
+        Row: {
+          connection_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          last_activity: string | null
+          members_count: number | null
+          messages_count: number | null
+          name: string
+          status: string | null
+          whatsapp_id: string | null
+        }
+        Insert: {
+          connection_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_activity?: string | null
+          members_count?: number | null
+          messages_count?: number | null
+          name: string
+          status?: string | null
+          whatsapp_id?: string | null
+        }
+        Update: {
+          connection_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_activity?: string | null
+          members_count?: number | null
+          messages_count?: number | null
+          name?: string
+          status?: string | null
+          whatsapp_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "groups_connection_id_fkey"
+            columns: ["connection_id"]
+            isOneToOne: false
+            referencedRelation: "connections"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      members: {
+        Row: {
+          created_at: string
+          group_id: string | null
+          id: string
+          is_admin: boolean | null
+          name: string | null
+          number: string
+          status: string | null
+        }
+        Insert: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_admin?: boolean | null
+          name?: string | null
+          number: string
+          status?: string | null
+        }
+        Update: {
+          created_at?: string
+          group_id?: string | null
+          id?: string
+          is_admin?: boolean | null
+          name?: string | null
+          number?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      plans: {
+        Row: {
+          created_at: string
+          currency: string
+          description: string | null
+          features: Json | null
+          id: string
+          interval: string
+          is_active: boolean | null
+          max_connections: number | null
+          max_groups: number | null
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean | null
+          max_connections?: number | null
+          max_groups?: number | null
+          name: string
+          price: number
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean | null
+          max_connections?: number | null
+          max_groups?: number | null
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
