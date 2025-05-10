@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import MainLayout from '@/components/Layout/MainLayout';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,26 @@ import { Textarea } from '@/components/ui/textarea';
 import YoutubeEmbed from '@/components/YoutubeEmbed';
 import { toast } from 'sonner';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 
 interface VideoContent {
   id: string;
   videoId: string;
   title: string;
   description: string;
+  categoryId?: string;
+}
+
+interface VideoCategory {
+  id: string;
+  name: string;
 }
 
 const Knowledge = () => {
@@ -23,18 +37,30 @@ const Knowledge = () => {
   const [videoUrl, setVideoUrl] = useState('');
   const [videoTitle, setVideoTitle] = useState('');
   const [videoDescription, setVideoDescription] = useState('');
+  const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+  
+  // This would eventually come from the database
+  const [categories] = useState<VideoCategory[]>([
+    { id: 'getting-started', name: 'Primeiros passos' },
+    { id: 'advanced', name: 'Recursos avançados' }
+  ]);
+  
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  
   const [savedVideos, setSavedVideos] = useState<VideoContent[]>([
     {
       id: '1',
       videoId: 'dQw4w9WgXcQ',
       title: 'Como usar o WhatsAdmin',
-      description: 'Tutorial completo sobre como utilizar todas as funcionalidades do WhatsAdmin.'
+      description: 'Tutorial completo sobre como utilizar todas as funcionalidades do WhatsAdmin.',
+      categoryId: 'getting-started'
     },
     {
       id: '2',
       videoId: 'yPYZpwSpKmA',
       title: 'Configurando grupos automaticamente',
-      description: 'Aprenda a configurar grupos de WhatsApp de forma automatizada com nossa plataforma.'
+      description: 'Aprenda a configurar grupos de WhatsApp de forma automatizada com nossa plataforma.',
+      categoryId: 'advanced'
     }
   ]);
 
@@ -61,7 +87,8 @@ const Knowledge = () => {
       id: Date.now().toString(),
       videoId,
       title: videoTitle,
-      description: videoDescription
+      description: videoDescription,
+      categoryId: selectedCategory || undefined
     };
 
     setSavedVideos([...savedVideos, newVideo]);
@@ -70,6 +97,7 @@ const Knowledge = () => {
     setVideoUrl('');
     setVideoTitle('');
     setVideoDescription('');
+    setSelectedCategory(null);
     
     toast.success('Vídeo adicionado com sucesso!');
   };
@@ -78,6 +106,10 @@ const Knowledge = () => {
     setSavedVideos(savedVideos.filter(video => video.id !== id));
     toast.success('Vídeo removido com sucesso!');
   };
+
+  const filteredVideos = selectedCategory 
+    ? savedVideos.filter(video => video.categoryId === selectedCategory)
+    : savedVideos;
 
   return (
     <MainLayout title="Base de Conhecimento" description="Documentação, tutoriais e recursos de aprendizado.">
@@ -90,60 +122,53 @@ const Knowledge = () => {
         
         <TabsContent value="videos" className="space-y-6 mt-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
-              <Card className="glass-card h-full">
+            <div>
+              <Card className="glass-card mb-6">
                 <CardHeader>
-                  <CardTitle>Vídeos Tutoriais</CardTitle>
+                  <CardTitle>Categorias</CardTitle>
                   <CardDescription>
-                    Assista a vídeos tutoriais para aprender a usar o WhatsAdmin.
+                    Filtre por categoria de conteúdo
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ScrollArea className="h-[calc(100vh-300px)]">
-                    <div className="space-y-8">
-                      {savedVideos.map((video) => (
-                        <div key={video.id} className="pb-6 border-b border-border last:border-0">
-                          <h3 className="text-lg font-semibold mb-2">{video.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-4">{video.description}</p>
-                          <YoutubeEmbed 
-                            videoId={video.videoId} 
-                            title={video.title}
-                            height={300}
-                          />
-                          <div className="mt-2 flex justify-end">
-                            <Button 
-                              variant="destructive" 
-                              size="sm"
-                              onClick={() => handleRemoveVideo(video.id)}
-                            >
-                              Remover
-                            </Button>
-                          </div>
-                        </div>
-                      ))}
-                      {savedVideos.length === 0 && (
-                        <div className="text-center py-12">
-                          <p className="text-muted-foreground">
-                            Não há vídeos cadastrados. Adicione um novo vídeo.
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </ScrollArea>
+                  <div className="space-y-2">
+                    <Button 
+                      variant={selectedCategory === null ? "default" : "outline"}
+                      className="w-full justify-start"
+                      onClick={() => setSelectedCategory(null)}
+                    >
+                      Todos os vídeos
+                    </Button>
+                    
+                    {categories.map(category => (
+                      <Button
+                        key={category.id}
+                        variant={selectedCategory === category.id ? "default" : "outline"}
+                        className="w-full justify-start"
+                        onClick={() => setSelectedCategory(category.id)}
+                      >
+                        {category.name}
+                      </Button>
+                    ))}
+                  </div>
                 </CardContent>
               </Card>
-            </div>
-            
-            <div>
-              <Card className="glass-card">
-                <CardHeader>
-                  <CardTitle>Adicionar Novo Vídeo</CardTitle>
-                  <CardDescription>
-                    Adicione vídeos tutoriais do YouTube à base de conhecimento.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
+              
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button className="w-full bg-neon-green text-background hover:bg-neon-green/80 mb-6">
+                    Adicionar Novo Vídeo
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Adicionar Novo Vídeo</SheetTitle>
+                    <SheetDescription>
+                      Adicione vídeos tutoriais do YouTube à base de conhecimento.
+                    </SheetDescription>
+                  </SheetHeader>
+                  
+                  <div className="space-y-4 mt-6">
                     <div className="space-y-2">
                       <Label htmlFor="video-url">URL do YouTube</Label>
                       <Input 
@@ -163,6 +188,20 @@ const Knowledge = () => {
                       />
                     </div>
                     <div className="space-y-2">
+                      <Label htmlFor="video-category">Categoria</Label>
+                      <select 
+                        id="video-category"
+                        className="w-full p-2 rounded border border-input bg-background"
+                        value={selectedCategory || ""}
+                        onChange={(e) => setSelectedCategory(e.target.value || null)}
+                      >
+                        <option value="">Sem categoria</option>
+                        {categories.map(cat => (
+                          <option key={cat.id} value={cat.id}>{cat.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
                       <Label htmlFor="video-description">Descrição</Label>
                       <Textarea 
                         id="video-description" 
@@ -180,6 +219,89 @@ const Knowledge = () => {
                       Adicionar Vídeo
                     </Button>
                   </div>
+                </SheetContent>
+              </Sheet>
+            </div>
+            
+            <div className="lg:col-span-2">
+              <Card className="glass-card h-full">
+                <CardHeader>
+                  <CardTitle>Vídeos Tutoriais</CardTitle>
+                  <CardDescription>
+                    Assista a vídeos tutoriais para aprender a usar o WhatsAdmin.
+                    {selectedCategory && (
+                      <span className="ml-2 text-sm bg-primary/20 px-2 py-0.5 rounded">
+                        {categories.find(c => c.id === selectedCategory)?.name}
+                      </span>
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-[calc(100vh-300px)]">
+                    <div className="space-y-8">
+                      {filteredVideos.map((video) => (
+                        <div key={video.id} className="pb-6 border-b border-border last:border-0">
+                          <h3 className="text-lg font-semibold mb-2">{video.title}</h3>
+                          <p className="text-sm text-muted-foreground mb-4">{video.description}</p>
+                          
+                          {activeVideoId === video.id ? (
+                            <YoutubeEmbed 
+                              videoId={video.videoId} 
+                              title={video.title}
+                              height={300}
+                              autoplay={true}
+                            />
+                          ) : (
+                            <div 
+                              className="relative cursor-pointer aspect-video bg-black rounded-lg overflow-hidden"
+                              onClick={() => setActiveVideoId(video.id)}
+                            >
+                              <img 
+                                src={`https://img.youtube.com/vi/${video.videoId}/maxresdefault.jpg`}
+                                alt={video.title}
+                                className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center">
+                                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M8 5v14l11-7z" />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="mt-4 flex justify-end">
+                            {activeVideoId === video.id && (
+                              <Button 
+                                variant="outline" 
+                                size="sm"
+                                className="mr-2"
+                                onClick={() => setActiveVideoId(null)}
+                              >
+                                Fechar
+                              </Button>
+                            )}
+                            <Button 
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => handleRemoveVideo(video.id)}
+                            >
+                              Remover
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                      {filteredVideos.length === 0 && (
+                        <div className="text-center py-12">
+                          <p className="text-muted-foreground">
+                            Não há vídeos {selectedCategory ? "nesta categoria" : "cadastrados"}. 
+                            Adicione um novo vídeo.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
                 </CardContent>
               </Card>
             </div>
