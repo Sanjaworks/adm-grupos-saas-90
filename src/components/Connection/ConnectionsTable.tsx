@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -6,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { RefreshCw, Trash, Smartphone } from 'lucide-react';
 import { toast } from 'sonner';
-import { Connection, updateConnection, deleteConnection } from '@/services/connectionService';
+import { Connection, updateConnection, deleteConnection, getConnectionById } from '@/services/connectionService';
 import { evolutionApi } from '@/lib/evolution-api';
 
 interface ConnectionsTableProps {
@@ -17,15 +16,27 @@ interface ConnectionsTableProps {
 export const ConnectionsTable: React.FC<ConnectionsTableProps> = ({ connections, onConnectionsChange }) => {
   const [loading, setLoading] = useState<Record<string, boolean>>({});
 
+  const getApiClientForConnection = (connection: Connection) => {
+    // Se a conexão tem URL e chave de API personalizadas, use-as
+    if (connection.api_url && connection.api_key) {
+      return new evolutionApi.EvolutionApiClient(connection.api_url, connection.api_key);
+    }
+    // Caso contrário, use a instância padrão
+    return evolutionApi;
+  };
+
   const handleReconnect = async (connection: Connection) => {
     try {
       setLoading(prev => ({ ...prev, [connection.id]: true }));
       
+      // Get API client based on connection settings
+      const api = getApiClientForConnection(connection);
+      
       // Reconnect using Evolution API
-      await evolutionApi.connectInstance(connection.instance_name);
+      await api.connectInstance(connection.instance_name);
       
       // Check instance status
-      const status = await evolutionApi.getInstanceInfo(connection.instance_name);
+      const status = await api.getInstanceInfo(connection.instance_name);
       
       // Update connection status
       if (status.instance.status === 'open') {
@@ -53,8 +64,11 @@ export const ConnectionsTable: React.FC<ConnectionsTableProps> = ({ connections,
     try {
       setLoading(prev => ({ ...prev, [connection.id]: true }));
       
+      // Get API client based on connection settings
+      const api = getApiClientForConnection(connection);
+      
       // Disconnect and delete instance
-      await evolutionApi.disconnectInstance(connection.instance_name);
+      await api.disconnectInstance(connection.instance_name);
       
       // Update connection status in database
       await updateConnection(connection.id, {
@@ -76,9 +90,12 @@ export const ConnectionsTable: React.FC<ConnectionsTableProps> = ({ connections,
     try {
       setLoading(prev => ({ ...prev, [connection.id]: true }));
       
+      // Get API client based on connection settings
+      const api = getApiClientForConnection(connection);
+      
       // Try to disconnect and delete instance if it exists
       try {
-        await evolutionApi.disconnectInstance(connection.instance_name);
+        await api.disconnectInstance(connection.instance_name);
       } catch (e) {
         // Ignore errors here as the instance might not exist
       }

@@ -11,6 +11,8 @@ export interface Connection {
   connected_at?: string;
   last_sync: string;
   created_at: string;
+  api_url?: string;
+  api_key?: string;
 }
 
 export const getConnections = async (): Promise<Connection[]> => {
@@ -59,6 +61,8 @@ export const createConnection = async (connection: Partial<Connection>): Promise
       battery: connection.battery || 0,
       number: connection.number,
       last_sync: connection.last_sync || new Date().toISOString(),
+      api_url: connection.api_url,
+      api_key: connection.api_key,
     })
     .select()
     .maybeSingle();

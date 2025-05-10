@@ -1,130 +1,181 @@
 
-import React, { useEffect, useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { evolutionApi } from '@/lib/evolution-api';
-import { toast } from 'sonner';
 import { updateConnection } from '@/services/connectionService';
+import YoutubeEmbed from '@/components/YoutubeEmbed';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import { Spinner } from '@/components/ui/spinner';
 
 interface QrCodeModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   instanceName: string;
   connectionId: string;
+  apiUrl?: string;
+  apiKey?: string;
 }
 
-export const QrCodeModal: React.FC<QrCodeModalProps> = ({ open, onOpenChange, instanceName, connectionId }) => {
+const QrCodeModal: React.FC<QrCodeModalProps> = ({
+  open,
+  onOpenChange,
+  instanceName,
+  connectionId,
+  apiUrl,
+  apiKey,
+}) => {
   const [qrCode, setQrCode] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<string>('awaiting_qr');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
 
-  const generateQrCode = async () => {
+  // Inicialize a API do Evolution com as credenciais fornecidas
+  const api = apiUrl && apiKey 
+    ? new evolutionApi.EvolutionApiClient(apiUrl, apiKey)
+    : evolutionApi;
+
+  useEffect(() => {
+    if (open && instanceName && connectionId) {
+      generateQRCode();
+      
+      // Start polling to check instance status
+      const interval = setInterval(checkInstanceStatus, 5000);
+      setPollingInterval(interval);
+      
+      return () => {
+        if (interval) clearInterval(interval);
+      };
+    }
+  }, [open, instanceName, connectionId]);
+  
+  useEffect(() => {
+    // Clean up polling when dialog closes
+    return () => {
+      if (pollingInterval) {
+        clearInterval(pollingInterval);
+      }
+    };
+  }, []);
+
+  const generateQRCode = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Cria a instância se ela não existir
-      await evolutionApi.createInstance(instanceName);
+      // Criar a instância na Evolution API
+      await api.createInstance(instanceName);
       
-      // Conecta à instância para obter o QR code
-      const instanceInfo = await evolutionApi.connectInstance(instanceName);
+      // Conectar à instância
+      const instanceInfo = await api.connectInstance(instanceName);
       
-      // Check if QR code is available
-      if (instanceInfo.instance.qrcode?.code) {
+      // Verificar se o QR code está disponível
+      if (instanceInfo.instance.qrcode && instanceInfo.instance.qrcode.code) {
         setQrCode(instanceInfo.instance.qrcode.code);
-        
-        // Check for connection status periodically
-        checkConnectionStatus();
       } else {
-        toast.error('Não foi possível gerar o QR Code. Tente novamente.');
+        // Se não tiver QR code, pode ser que já esteja conectado
+        if (instanceInfo.instance.status === 'open') {
+          await handleConnectionSuccess(instanceInfo.instance.profileName || '');
+        } else {
+          setError('Não foi possível gerar o QR code. Tente novamente.');
+        }
       }
     } catch (error) {
-      console.error("Erro ao gerar QR code:", error);
-      toast.error('Erro ao gerar QR code. Verifique os logs para mais detalhes.');
+      console.error('Erro ao gerar QR code:', error);
+      setError('Erro ao gerar QR code. Verifique os logs para mais detalhes.');
     } finally {
       setLoading(false);
     }
   };
 
-  const checkConnectionStatus = async () => {
-    // Poll for connection status every 3 seconds
-    const interval = setInterval(async () => {
-      try {
-        const status = await evolutionApi.getInstanceInfo(instanceName);
+  const checkInstanceStatus = async () => {
+    try {
+      if (!open) return;
+      
+      const instanceInfo = await api.getInstanceInfo(instanceName);
+      
+      if (instanceInfo.instance.status === 'open') {
+        // WhatsApp conectado com sucesso
+        await handleConnectionSuccess(instanceInfo.instance.profileName || '');
         
-        // If the status changes to open, update the connection
-        if (status.instance.status === 'open') {
-          setConnectionStatus('connected');
-          
-          // Update the connection in Supabase
-          await updateConnection(connectionId, {
-            status: 'active',
-            number: status.instance.profileName || '',
-            battery: 100, // Default value, we'll update it later
-            connected_at: new Date().toISOString()
-          });
-          
-          toast.success('WhatsApp conectado com sucesso!');
-          clearInterval(interval);
-          onOpenChange(false); // Close modal
+        if (pollingInterval) {
+          clearInterval(pollingInterval);
+          setPollingInterval(null);
         }
-      } catch (error) {
-        console.error("Erro ao verificar status da conexão:", error);
       }
-    }, 3000);
-    
-    // Cleanup on component unmount or when modal closes
-    return () => clearInterval(interval);
+    } catch (error) {
+      // Ignorar erros durante polling para não interromper o processo
+      console.log('Verificando status da conexão...');
+    }
   };
 
-  useEffect(() => {
-    if (open) {
-      generateQrCode();
+  const handleConnectionSuccess = async (profileName: string) => {
+    try {
+      // Atualizar a conexão no banco de dados
+      await updateConnection(connectionId, {
+        status: 'active',
+        number: profileName,
+        connected_at: new Date().toISOString(),
+        api_url: apiUrl,
+        api_key: apiKey,
+      });
+      
+      toast.success('WhatsApp conectado com sucesso!');
+      onOpenChange(false);
+    } catch (error) {
+      console.error('Erro ao atualizar conexão:', error);
+      toast.error('Erro ao atualizar status da conexão.');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Escaneie o QR Code</DialogTitle>
-          <DialogDescription>
-            Abra o WhatsApp no seu celular e escaneie o QR Code abaixo.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="flex flex-col items-center p-4">
+      <DialogContent className="sm:max-w-md">
+        <DialogTitle>Conectar WhatsApp</DialogTitle>
+        <DialogDescription>
+          Escaneie o QR code abaixo com seu aplicativo WhatsApp para conectar esta instância.
+        </DialogDescription>
+        <div className="flex flex-col items-center justify-center py-4">
           {loading ? (
-            <div className="border-4 border-white w-64 h-64 flex items-center justify-center mb-4">
-              <RefreshCw className="h-12 w-12 animate-spin text-neon-green" />
+            <div className="flex flex-col items-center justify-center h-64">
+              <Spinner size="lg" />
+              <p className="mt-4 text-muted-foreground">Gerando QR code...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center">
+              <p className="text-destructive mb-4">{error}</p>
+              <Button onClick={generateQRCode}>Tentar novamente</Button>
             </div>
           ) : qrCode ? (
-            <div className="border-4 border-white w-64 h-64 flex items-center justify-center mb-4">
+            <div className="flex flex-col items-center space-y-4">
               <img 
                 src={`data:image/png;base64,${qrCode}`} 
-                alt="QR Code" 
-                className="w-full h-full"
+                alt="QR Code WhatsApp" 
+                className="w-64 h-64"
               />
+              <p className="text-sm text-muted-foreground text-center">
+                Abra o WhatsApp no seu celular, acesse Configurações {'>'} Aparelhos conectados {'>'} Conectar um aparelho
+              </p>
             </div>
           ) : (
-            <div className="border-4 border-white w-64 h-64 flex items-center justify-center mb-4">
-              <p className="text-center">Não foi possível gerar o QR Code.</p>
+            <div className="text-center">
+              <p className="text-muted-foreground mb-4">QR code não disponível.</p>
+              <Button onClick={generateQRCode}>Gerar novamente</Button>
             </div>
           )}
-          
-          <p className="text-sm text-center text-muted-foreground mb-4">
-            Este QR Code expira em 60 segundos
+        </div>
+        
+        <div className="mt-4">
+          <p className="text-sm font-medium mb-2">Não consegue escanear?</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Veja o tutorial em vídeo para saber como conectar corretamente:
           </p>
-          
-          <Button 
-            variant="outline" 
-            className="flex items-center"
-            onClick={generateQrCode}
-            disabled={loading || connectionStatus === 'connected'}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            {loading ? 'Gerando...' : 'Recarregar QR Code'}
-          </Button>
+          <YoutubeEmbed 
+            videoId="dQw4w9WgXcQ" 
+            title="Como conectar o WhatsApp" 
+            height={200}
+            showControls={true}
+          />
         </div>
       </DialogContent>
     </Dialog>

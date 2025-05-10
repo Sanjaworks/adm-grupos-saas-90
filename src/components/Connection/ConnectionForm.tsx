@@ -24,6 +24,7 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
   const [connectionName, setConnectionName] = useState('');
   const [instanceName, setInstanceName] = useState('');
   const [apiKey, setApiKey] = useState('');
+  const [apiUrl, setApiUrl] = useState('');
   const [qrDialogOpen, setQrDialogOpen] = useState(false);
   const [connectionId, setConnectionId] = useState('');
 
@@ -45,7 +46,9 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
         instance_name: instanceName,
         status: 'awaiting_qr',
         battery: 0,
-        last_sync: new Date().toISOString()
+        last_sync: new Date().toISOString(),
+        api_url: apiUrl.trim() || undefined, // Store API URL if provided
+        api_key: apiKey.trim() || undefined, // Store API key if provided
       });
 
       if (newConnection) {
@@ -110,6 +113,19 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
                 </p>
               </div>
               
+              <div className="space-y-2">
+                <Label htmlFor="api-url-qr">URL da Evolution API (opcional)</Label>
+                <Input 
+                  id="api-url-qr" 
+                  placeholder="Ex: https://api.evolution-api.com/v1" 
+                  value={apiUrl}
+                  onChange={(e) => setApiUrl(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Deixe em branco para usar a API padrão configurada no sistema.
+                </p>
+              </div>
+              
               <p className="text-sm text-muted-foreground">
                 Escaneie o QR code com seu WhatsApp para conectar.
               </p>
@@ -124,6 +140,19 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
             </TabsContent>
             
             <TabsContent value="api" className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="api-url">URL da Evolution API</Label>
+                <Input 
+                  id="api-url" 
+                  placeholder="Ex: https://api.evolution-api.com/v1" 
+                  value={apiUrl}
+                  onChange={(e) => setApiUrl(e.target.value)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  URL da API que será usada para gerenciar esta conexão.
+                </p>
+              </div>
+              
               <div className="space-y-2">
                 <Label htmlFor="api-key">Chave da API</Label>
                 <Input 
@@ -166,6 +195,8 @@ export const ConnectionForm: React.FC<ConnectionFormProps> = ({
         onOpenChange={setQrDialogOpen}
         instanceName={instanceName}
         connectionId={connectionId}
+        apiUrl={apiUrl}
+        apiKey={apiKey}
       />
     </>
   );

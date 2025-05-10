@@ -344,8 +344,63 @@ export class EvolutionApiClient {
 }
 
 // Exporta uma instância global para ser usada em toda a aplicação
-// Em uma aplicação real, você precisaria configurar isso com valores do ambiente
-export const evolutionApi = new EvolutionApiClient(
-  import.meta.env.VITE_EVOLUTION_API_URL || "https://api.evolution-api.com/v1",
-  import.meta.env.VITE_EVOLUTION_API_KEY || "sua-chave-da-api"
-);
+const defaultApiUrl = import.meta.env.VITE_EVOLUTION_API_URL || "https://api.evolution-api.com/v1";
+const defaultApiKey = import.meta.env.VITE_EVOLUTION_API_KEY || "sua-chave-da-api";
+
+// Exporta o módulo com a instância padrão e a classe
+export const evolutionApi = {
+  EvolutionApiClient,
+  // Instância padrão com as configurações do ambiente
+  createInstance: async (instanceName: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.createInstance(instanceName);
+  },
+  connectInstance: async (instanceName: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.connectInstance(instanceName);
+  },
+  getInstanceInfo: async (instanceName: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.getInstanceInfo(instanceName);
+  },
+  disconnectInstance: async (instanceName: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.disconnectInstance(instanceName);
+  },
+  listGroups: async (instanceName: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.listGroups(instanceName);
+  },
+  getGroupInfo: async (instanceName: string, groupId: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.getGroupInfo(instanceName, groupId);
+  },
+  sendGroupMessage: async (instanceName: string, groupId: string, message: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.sendGroupMessage(instanceName, groupId, message);
+  },
+  sendBulkMessages: async (instanceName: string, groupIds: string[], message: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.sendBulkMessages(instanceName, groupIds, message);
+  },
+  addGroupParticipant: async (instanceName: string, groupId: string, participantId: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.addGroupParticipant(instanceName, groupId, participantId);
+  },
+  removeGroupParticipant: async (instanceName: string, groupId: string, participantId: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.removeGroupParticipant(instanceName, groupId, participantId);
+  },
+  promoteParticipant: async (instanceName: string, groupId: string, participantId: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.promoteParticipant(instanceName, groupId, participantId);
+  },
+  demoteParticipant: async (instanceName: string, groupId: string, participantId: string) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.demoteParticipant(instanceName, groupId, participantId);
+  },
+  getGroupMessages: async (instanceName: string, groupId: string, count: number = 50) => {
+    const client = new EvolutionApiClient(defaultApiUrl, defaultApiKey);
+    return client.getGroupMessages(instanceName, groupId, count);
+  }
+};
