@@ -34,7 +34,7 @@ export class EvolutionApiClient {
    * @param options - Opções da requisição
    * @returns Resposta da requisição
    */
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+  public async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
     const url = `${this.baseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
     
     const headers = {
@@ -114,3 +114,4 @@ export class EvolutionApiClient {
     });
   }
 }
+

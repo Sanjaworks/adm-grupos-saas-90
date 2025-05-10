@@ -20,7 +20,7 @@ export class GroupsApi {
    * @returns Lista de grupos
    */
   async listGroups(instanceName: string): Promise<GroupInfo[]> {
-    const response = await (this.client as any).request<{ groups: GroupInfo[] }>(`/group/list/${instanceName}`);
+    const response = await this.client.request<{ groups: GroupInfo[] }>(`/group/list/${instanceName}`);
     return response.groups;
   }
 
@@ -32,7 +32,7 @@ export class GroupsApi {
    * @returns Informações do grupo
    */
   async getGroupInfo(instanceName: string, groupId: string): Promise<GroupInfo> {
-    return (this.client as any).request<GroupInfo>(`/group/info/${instanceName}`, {
+    return this.client.request<GroupInfo>(`/group/info/${instanceName}`, {
       method: "POST",
       body: JSON.stringify({
         groupId: `${groupId}@g.us` // Formato que a API espera
@@ -49,7 +49,7 @@ export class GroupsApi {
    * @returns Status da operação
    */
   async addGroupParticipant(instanceName: string, groupId: string, participantId: string): Promise<any> {
-    return (this.client as any).request<any>(`/group/add-participant/${instanceName}`, {
+    return this.client.request<any>(`/group/add-participant/${instanceName}`, {
       method: "POST",
       body: JSON.stringify({
         groupId: `${groupId}@g.us`,
@@ -67,7 +67,7 @@ export class GroupsApi {
    * @returns Status da operação
    */
   async removeGroupParticipant(instanceName: string, groupId: string, participantId: string): Promise<any> {
-    return (this.client as any).request<any>(`/group/remove-participant/${instanceName}`, {
+    return this.client.request<any>(`/group/remove-participant/${instanceName}`, {
       method: "POST",
       body: JSON.stringify({
         groupId: `${groupId}@g.us`,
@@ -85,7 +85,7 @@ export class GroupsApi {
    * @returns Status da operação
    */
   async promoteParticipant(instanceName: string, groupId: string, participantId: string): Promise<any> {
-    return (this.client as any).request<any>(`/group/promote-participant/${instanceName}`, {
+    return this.client.request<any>(`/group/promote-participant/${instanceName}`, {
       method: "POST",
       body: JSON.stringify({
         groupId: `${groupId}@g.us`,
@@ -103,7 +103,7 @@ export class GroupsApi {
    * @returns Status da operação
    */
   async demoteParticipant(instanceName: string, groupId: string, participantId: string): Promise<any> {
-    return (this.client as any).request<any>(`/group/demote-participant/${instanceName}`, {
+    return this.client.request<any>(`/group/demote-participant/${instanceName}`, {
       method: "POST",
       body: JSON.stringify({
         groupId: `${groupId}@g.us`,
@@ -121,9 +121,10 @@ export class GroupsApi {
    * @returns Lista de mensagens
    */
   async getGroupMessages(instanceName: string, groupId: string, count: number = 50): Promise<Message[]> {
-    const response = await (this.client as any).request<{ messages: Message[] }>(
+    const response = await this.client.request<{ messages: Message[] }>(
       `/message/list/${instanceName}/${groupId}@g.us/${count}`
     );
     return response.messages;
   }
 }
+

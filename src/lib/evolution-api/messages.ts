@@ -21,7 +21,7 @@ export class MessagesApi {
    * @returns Status do envio
    */
   async sendGroupMessage(instanceName: string, groupId: string, message: string): Promise<any> {
-    return (this.client as any).request<any>(`/message/send/text/${instanceName}`, {
+    return this.client.request<any>(`/message/send/text/${instanceName}`, {
       method: "POST",
       body: JSON.stringify({
         number: `${groupId}@g.us`,
@@ -46,7 +46,7 @@ export class MessagesApi {
   async sendBulkMessages(instanceName: string, groupIds: string[], message: string): Promise<any> {
     const numbers = groupIds.map(id => `${id}@g.us`);
     
-    return (this.client as any).request<any>(`/message/send/text/${instanceName}`, {
+    return this.client.request<any>(`/message/send/text/${instanceName}`, {
       method: "POST",
       body: JSON.stringify({
         numbers,
@@ -60,3 +60,4 @@ export class MessagesApi {
     });
   }
 }
+
