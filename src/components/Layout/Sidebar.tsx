@@ -19,6 +19,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 type SidebarProps = {
   className?: string;
@@ -110,19 +111,21 @@ export const Sidebar = ({ className }: SidebarProps) => {
         </Button>
       </div>
       
-      <nav className="flex-1 px-2 py-4">
-        <ul className="space-y-2">
-          {navItems.map((item) => (
-            <NavItem 
-              key={item.path}
-              path={item.path}
-              icon={item.icon}
-              name={item.name}
-              description={item.description}
-              collapsed={collapsed}
-            />
-          ))}
-        </ul>
+      <nav className="flex-1 px-2 py-4 overflow-hidden">
+        <ScrollArea className="h-[calc(100vh-150px)]">
+          <ul className="space-y-2 pr-2">
+            {navItems.map((item) => (
+              <NavItem 
+                key={item.path}
+                path={item.path}
+                icon={item.icon}
+                name={item.name}
+                description={item.description}
+                collapsed={collapsed}
+              />
+            ))}
+          </ul>
+        </ScrollArea>
       </nav>
       
       <div className="p-4">

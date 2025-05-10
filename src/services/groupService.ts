@@ -49,9 +49,18 @@ export const createGroup = async (group: Partial<Group>): Promise<Group | null> 
     return null;
   }
   
+  // Garantir que estamos passando um objeto e não um array
   const { data, error } = await supabase
     .from('groups')
-    .insert(group)
+    .insert({
+      name: group.name,
+      description: group.description,
+      members_count: group.members_count || 0,
+      messages_count: group.messages_count || 0,
+      status: group.status || 'active',
+      last_activity: group.last_activity || new Date().toISOString(),
+      connection_id: group.connection_id
+    })
     .select()
     .maybeSingle();
     

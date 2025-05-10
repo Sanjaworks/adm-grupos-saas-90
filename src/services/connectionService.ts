@@ -49,9 +49,17 @@ export const createConnection = async (connection: Partial<Connection>): Promise
     return null;
   }
 
+  // Garantir que estamos passando um objeto e não um array
   const { data, error } = await supabase
     .from('connections')
-    .insert(connection)
+    .insert({
+      name: connection.name,
+      instance_name: connection.instance_name,
+      status: connection.status || 'disconnected',
+      battery: connection.battery || 0,
+      number: connection.number,
+      last_sync: connection.last_sync || new Date().toISOString(),
+    })
     .select()
     .maybeSingle();
     

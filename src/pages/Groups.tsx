@@ -10,10 +10,12 @@ import { useQuery } from '@tanstack/react-query';
 import { getGroups, Group } from '@/services/groupService';
 import { getConnections } from '@/services/connectionService';
 import { useToast } from '@/components/ui/use-toast';
+import CreateGroupDrawer from '@/components/Groups/CreateGroupDrawer';
 
 export const Groups = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [refetchTrigger, setRefetchTrigger] = useState(0);
 
   // Fetch groups data from Supabase
   const { 
@@ -21,7 +23,7 @@ export const Groups = () => {
     isLoading: isLoadingGroups,
     error: groupsError 
   } = useQuery({
-    queryKey: ['groups'],
+    queryKey: ['groups', refetchTrigger],
     queryFn: getGroups
   });
 
@@ -30,7 +32,7 @@ export const Groups = () => {
     data: connections = [],
     isLoading: isLoadingConnections 
   } = useQuery({
-    queryKey: ['connections'],
+    queryKey: ['connections', refetchTrigger],
     queryFn: getConnections
   });
 
@@ -42,6 +44,11 @@ export const Groups = () => {
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+  };
+
+  // Handle group creation success
+  const handleGroupCreated = () => {
+    setRefetchTrigger(prev => prev + 1);
   };
 
   // Show error toast if there's an error fetching groups
@@ -71,13 +78,10 @@ export const Groups = () => {
           />
         </div>
         
-        <Button 
-          className="bg-neon-green text-background hover:bg-neon-green/80"
-          disabled={connections.length === 0}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          Conectar Novo Grupo
-        </Button>
+        <CreateGroupDrawer 
+          connections={connections} 
+          onGroupCreated={handleGroupCreated} 
+        />
       </div>
       
       {isLoadingGroups ? (
@@ -178,10 +182,10 @@ export const Groups = () => {
               ? `Não encontramos grupos correspondentes a "${searchTerm}"`
               : "Você ainda não tem grupos conectados."}
           </p>
-          <Button className="bg-neon-green text-background hover:bg-neon-green/80">
-            <Plus className="mr-2 h-4 w-4" />
-            Conectar Primeiro Grupo
-          </Button>
+          <CreateGroupDrawer 
+            connections={connections} 
+            onGroupCreated={handleGroupCreated} 
+          />
         </div>
       )}
     </MainLayout>
