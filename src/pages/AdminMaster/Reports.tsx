@@ -9,7 +9,7 @@ import {
   Calendar,
   Download,
   FileSpreadsheet,
-  FilePdf,
+  FileText,
   Share,
   Filter,
   RefreshCw,
@@ -136,7 +136,7 @@ const ReportsPage = () => {
                     Exportar CSV
                   </Button>
                   <Button variant="outline" size="sm">
-                    <FilePdf className="mr-2" size={16} />
+                    <FileText className="mr-2" size={16} />
                     Exportar PDF
                   </Button>
                 </div>
@@ -245,7 +245,7 @@ const ReportsPage = () => {
                     Exportar CSV
                   </Button>
                   <Button variant="outline" size="sm">
-                    <FilePdf className="mr-2" size={16} />
+                    <FileText className="mr-2" size={16} />
                     Exportar PDF
                   </Button>
                 </div>
