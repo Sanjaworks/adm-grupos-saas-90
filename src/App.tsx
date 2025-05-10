@@ -22,6 +22,15 @@ import Scheduling from "./pages/Scheduling";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
 
+// Import Admin Master pages
+import AdminDashboard from "./pages/AdminMaster/Dashboard";
+import CompaniesPage from "./pages/AdminMaster/Companies";
+import PlansPage from "./pages/AdminMaster/Plans";
+import CommunicationsPage from "./pages/AdminMaster/Communications";
+import KnowledgePage from "./pages/AdminMaster/Knowledge";
+import ReportsPage from "./pages/AdminMaster/Reports";
+import SettingsPage from "./pages/AdminMaster/Settings";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -46,6 +55,16 @@ const App = () => (
               <Route path="/settings" element={<Settings />} />
               <Route path="/knowledge" element={<Knowledge />} />
               <Route path="/scheduling" element={<Scheduling />} />
+              
+              {/* Admin Master Routes */}
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/companies" element={<CompaniesPage />} />
+              <Route path="/admin/plans" element={<PlansPage />} />
+              <Route path="/admin/communications" element={<CommunicationsPage />} />
+              <Route path="/admin/knowledge" element={<KnowledgePage />} />
+              <Route path="/admin/reports" element={<ReportsPage />} />
+              <Route path="/admin/settings" element={<SettingsPage />} />
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
