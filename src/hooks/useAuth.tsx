@@ -34,7 +34,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         
         if (user) {
           setUser(user);
-          setProfile(profile);
+          if (profile) {
+            setProfile(profile);
+          }
         }
       } catch (error) {
         console.error('Erro ao verificar autenticação:', error);
@@ -50,13 +52,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session && session.user) {
         setUser(session.user);
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', session.user.id)
-          .single();
-          
-        setProfile(profileData as Profile | null);
+        // We'll handle the profile when we have authentication set up
+        setProfile(null);
       } else {
         setUser(null);
         setProfile(null);

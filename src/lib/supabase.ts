@@ -75,19 +75,8 @@ export const getCurrentUser = async () => {
   const { data: { user } } = await supabase.auth.getUser();
   
   if (user) {
-    // Check if we have a profiles table
-    try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .maybeSingle();
-        
-      return { user, profile };
-    } catch (error) {
-      console.error("Error fetching profile, might not exist yet:", error);
-      return { user, profile: null };
-    }
+    // Since we don't have a profiles table yet, just return the user without a profile
+    return { user, profile: null };
   }
   
   return { user: null, profile: null };

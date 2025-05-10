@@ -51,7 +51,7 @@ export const createConnection = async (connection: Partial<Connection>): Promise
 
   const { data, error } = await supabase
     .from('connections')
-    .insert([connection])
+    .insert(connection)
     .select()
     .maybeSingle();
     

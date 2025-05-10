@@ -51,7 +51,7 @@ export const createGroup = async (group: Partial<Group>): Promise<Group | null> 
   
   const { data, error } = await supabase
     .from('groups')
-    .insert([group])
+    .insert(group)
     .select()
     .maybeSingle();
     
