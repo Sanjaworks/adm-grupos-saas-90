@@ -43,6 +43,12 @@ export const getGroupById = async (id: string): Promise<Group | null> => {
 };
 
 export const createGroup = async (group: Partial<Group>): Promise<Group | null> => {
+  // Make sure name is present as it's required
+  if (!group.name) {
+    console.error("Missing required fields for group");
+    return null;
+  }
+  
   const { data, error } = await supabase
     .from('groups')
     .insert([group])

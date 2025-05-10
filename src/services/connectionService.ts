@@ -43,6 +43,12 @@ export const getConnectionById = async (id: string): Promise<Connection | null> 
 };
 
 export const createConnection = async (connection: Partial<Connection>): Promise<Connection | null> => {
+  // Make sure required fields are present
+  if (!connection.name || !connection.instance_name) {
+    console.error("Missing required fields for connection");
+    return null;
+  }
+
   const { data, error } = await supabase
     .from('connections')
     .insert([connection])

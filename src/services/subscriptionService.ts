@@ -27,7 +27,11 @@ export const getPlans = async (): Promise<Plan[]> => {
     return [];
   }
   
-  return data || [];
+  return data?.map(plan => ({
+    ...plan,
+    features: Array.isArray(plan.features) ? plan.features : 
+             (typeof plan.features === 'string' ? JSON.parse(plan.features) : [])
+  })) || [];
 };
 
 export const getPlanById = async (id: string): Promise<Plan | null> => {
@@ -42,5 +46,11 @@ export const getPlanById = async (id: string): Promise<Plan | null> => {
     return null;
   }
   
-  return data;
+  if (!data) return null;
+  
+  return {
+    ...data,
+    features: Array.isArray(data.features) ? data.features : 
+             (typeof data.features === 'string' ? JSON.parse(data.features) : [])
+  };
 };
