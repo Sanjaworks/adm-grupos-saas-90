@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -21,17 +21,22 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Book, Save, X } from 'lucide-react';
+import { Book, Save, X, FileText, Youtube, File } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import YoutubeEmbed from '@/components/YoutubeEmbed';
 
 // Esquema de validação com Zod
 const articleFormSchema = z.object({
   title: z.string().min(5, { message: 'O título deve ter pelo menos 5 caracteres' }),
   category: z.string().min(1, { message: 'Selecione uma categoria' }),
-  content: z.string().min(10, { message: 'O conteúdo deve ter pelo menos 10 caracteres' }),
+  content_type: z.enum(['text', 'video', 'file']).default('text'),
+  content: z.string().optional(),
+  video_url: z.string().optional(),
+  file_url: z.string().optional(),
   tags: z.string().optional(),
   visibility: z.enum(['public', 'admin', 'company']),
   company_id: z.string().optional(),
@@ -47,6 +52,7 @@ interface ArticleFormProps {
   categories: { id: string; name: string }[];
   companies: { id: string; name: string }[];
   isLoading?: boolean;
+  onFileUpload?: (file: File) => Promise<string | null>;
 }
 
 const ArticleForm: React.FC<ArticleFormProps> = ({
@@ -56,15 +62,22 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   categories,
   companies,
   isLoading = false,
+  onFileUpload,
 }) => {
   const { toast } = useToast();
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [youtubePreview, setYoutubePreview] = useState<string | null>(null);
   
   const form = useForm<ArticleFormValues>({
     resolver: zodResolver(articleFormSchema),
     defaultValues: {
       title: initialData?.title || '',
       category: initialData?.category || '',
+      content_type: initialData?.content_type || 'text',
       content: initialData?.content || '',
+      video_url: initialData?.video_url || '',
+      file_url: initialData?.file_url || '',
       tags: initialData?.tags || '',
       visibility: initialData?.visibility || 'public',
       company_id: initialData?.company_id || '',
@@ -73,6 +86,60 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
   });
 
   const watchVisibility = form.watch('visibility');
+  const watchContentType = form.watch('content_type');
+  const watchVideoUrl = form.watch('video_url');
+
+  // Extrair ID do YouTube da URL
+  const extractYoutubeId = (url: string): string | null => {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  };
+
+  // Atualizar preview quando a URL do YouTube mudar
+  React.useEffect(() => {
+    if (watchVideoUrl) {
+      const videoId = extractYoutubeId(watchVideoUrl);
+      setYoutubePreview(videoId);
+    } else {
+      setYoutubePreview(null);
+    }
+  }, [watchVideoUrl]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setSelectedFile(e.target.files[0]);
+      
+      if (onFileUpload) {
+        setIsUploading(true);
+        try {
+          const fileUrl = await onFileUpload(e.target.files[0]);
+          if (fileUrl) {
+            form.setValue('file_url', fileUrl);
+            toast({
+              title: 'Arquivo enviado',
+              description: 'O arquivo foi enviado com sucesso.',
+            });
+          } else {
+            toast({
+              title: 'Erro',
+              description: 'Não foi possível enviar o arquivo.',
+              variant: 'destructive',
+            });
+          }
+        } catch (error) {
+          console.error('Erro ao enviar arquivo:', error);
+          toast({
+            title: 'Erro',
+            description: 'Ocorreu um erro ao enviar o arquivo.',
+            variant: 'destructive',
+          });
+        } finally {
+          setIsUploading(false);
+        }
+      }
+    }
+  };
 
   const handleSubmit = (data: ArticleFormValues) => {
     try {
@@ -254,28 +321,150 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                 )}
               />
 
-              {/* Conteúdo */}
+              {/* Tipo de Conteúdo */}
               <FormField
                 control={form.control}
-                name="content"
+                name="content_type"
                 render={({ field }) => (
                   <FormItem className="col-span-1 md:col-span-2">
-                    <FormLabel>Conteúdo</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        placeholder="Conteúdo do artigo" 
-                        {...field}
-                        rows={15}
-                        className="min-h-[200px] resize-y"
-                      />
-                    </FormControl>
-                    <FormDescription>
-                      Use markdown para formatação
-                    </FormDescription>
+                    <FormLabel>Tipo de Conteúdo</FormLabel>
+                    <Tabs
+                      defaultValue={field.value}
+                      onValueChange={(value: 'text' | 'video' | 'file') => {
+                        field.onChange(value);
+                      }}
+                      className="w-full"
+                    >
+                      <TabsList className="grid grid-cols-3 w-full">
+                        <TabsTrigger value="text" className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" />
+                          Texto
+                        </TabsTrigger>
+                        <TabsTrigger value="video" className="flex items-center gap-2">
+                          <Youtube className="h-4 w-4" />
+                          Vídeo
+                        </TabsTrigger>
+                        <TabsTrigger value="file" className="flex items-center gap-2">
+                          <File className="h-4 w-4" />
+                          Arquivo
+                        </TabsTrigger>
+                      </TabsList>
+                    </Tabs>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+
+              {/* Conteúdo baseado no tipo selecionado */}
+              {watchContentType === 'text' && (
+                <FormField
+                  control={form.control}
+                  name="content"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1 md:col-span-2">
+                      <FormLabel>Conteúdo</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Conteúdo do artigo" 
+                          {...field}
+                          rows={15}
+                          className="min-h-[200px] resize-y"
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Use markdown para formatação
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {watchContentType === 'video' && (
+                <FormField
+                  control={form.control}
+                  name="video_url"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1 md:col-span-2">
+                      <FormLabel>URL do Vídeo (YouTube)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="https://www.youtube.com/watch?v=..." 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Cole a URL completa do vídeo do YouTube
+                      </FormDescription>
+                      <FormMessage />
+
+                      {/* Preview do vídeo */}
+                      {youtubePreview && (
+                        <div className="mt-4">
+                          <p className="text-sm mb-2">Preview:</p>
+                          <div className="rounded-md overflow-hidden">
+                            <YoutubeEmbed 
+                              videoId={youtubePreview} 
+                              title="Preview" 
+                              height={300} 
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </FormItem>
+                  )}
+                />
+              )}
+
+              {watchContentType === 'file' && (
+                <div className="col-span-1 md:col-span-2 space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="file_url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Arquivo</FormLabel>
+                        <div className="flex flex-col space-y-2">
+                          <Input
+                            type="file"
+                            onChange={handleFileChange}
+                            disabled={isUploading}
+                            className="max-w-md"
+                          />
+                          {selectedFile && (
+                            <p className="text-sm text-muted-foreground">
+                              Arquivo selecionado: {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
+                            </p>
+                          )}
+                          {field.value && (
+                            <div className="flex items-center mt-2">
+                              <span className="text-sm text-muted-foreground mr-2">
+                                Arquivo enviado:
+                              </span>
+                              <a 
+                                href={field.value} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-sm text-blue-600 hover:underline"
+                              >
+                                Visualizar arquivo
+                              </a>
+                            </div>
+                          )}
+                          <input 
+                            type="hidden" 
+                            {...field} 
+                          />
+                        </div>
+                        <FormDescription>
+                          Envie PDFs, documentos ou apresentações
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
@@ -285,9 +474,9 @@ const ArticleForm: React.FC<ArticleFormProps> = ({
                 Cancelar
               </Button>
             )}
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading || isUploading}>
               <Save className="mr-2 h-4 w-4" />
-              {isLoading ? 'Salvando...' : 'Salvar'}
+              {isLoading || isUploading ? 'Salvando...' : 'Salvar'}
             </Button>
           </CardFooter>
         </form>

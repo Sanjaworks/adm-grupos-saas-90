@@ -15,14 +15,24 @@ import {
   RefreshCw,
   ChevronsUpDown,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  ChevronDown
 } from 'lucide-react';
 import {
-  Select
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 const ReportsPage = () => {
   const [timePeriod, setTimePeriod] = useState('month');
+  const [planFilter, setPlanFilter] = useState('all');
   
   return (
     <AdminMasterLayout
@@ -40,33 +50,93 @@ const ReportsPage = () => {
         {/* Filtros comuns para todos os relatórios */}
         <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
           <div className="flex gap-2">
-            <Select defaultValue="month">
-              <option value="7days">Últimos 7 dias</option>
-              <option value="month">Último mês</option>
-              <option value="quarter">Último trimestre</option>
-              <option value="year">Último ano</option>
-              <option value="custom">Período personalizado</option>
-            </Select>
-            
-            <Button variant="outline" size="icon">
-              <Calendar size={18} />
-            </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Calendar size={18} />
+                  {timePeriod === '7days' ? 'Últimos 7 dias' : 
+                   timePeriod === 'month' ? 'Último mês' : 
+                   timePeriod === 'quarter' ? 'Último trimestre' : 
+                   timePeriod === 'year' ? 'Último ano' : 
+                   'Período personalizado'}
+                  <ChevronDown size={16} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56" align="start">
+                <div className="space-y-1">
+                  <Button 
+                    variant={timePeriod === '7days' ? "default" : "ghost"} 
+                    className="w-full justify-start"
+                    onClick={() => setTimePeriod('7days')}
+                  >
+                    Últimos 7 dias
+                  </Button>
+                  <Button 
+                    variant={timePeriod === 'month' ? "default" : "ghost"} 
+                    className="w-full justify-start"
+                    onClick={() => setTimePeriod('month')}
+                  >
+                    Último mês
+                  </Button>
+                  <Button 
+                    variant={timePeriod === 'quarter' ? "default" : "ghost"} 
+                    className="w-full justify-start"
+                    onClick={() => setTimePeriod('quarter')}
+                  >
+                    Último trimestre
+                  </Button>
+                  <Button 
+                    variant={timePeriod === 'year' ? "default" : "ghost"} 
+                    className="w-full justify-start"
+                    onClick={() => setTimePeriod('year')}
+                  >
+                    Último ano
+                  </Button>
+                  <Button 
+                    variant={timePeriod === 'custom' ? "default" : "ghost"} 
+                    className="w-full justify-start"
+                    onClick={() => setTimePeriod('custom')}
+                  >
+                    Período personalizado
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
           
           <div className="flex gap-2">
-            <Select defaultValue="all">
-              <option value="all">Todas Empresas</option>
-              <option value="enterprise">Plano Enterprise</option>
-              <option value="premium">Plano Premium</option>
-              <option value="standard">Plano Standard</option>
-              <option value="basic">Plano Basic</option>
-            </Select>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <Filter size={18} />
+                  {planFilter === 'all' ? 'Todas Empresas' :
+                   planFilter === 'enterprise' ? 'Plano Enterprise' :
+                   planFilter === 'premium' ? 'Plano Premium' :
+                   planFilter === 'standard' ? 'Plano Standard' :
+                   'Plano Basic'}
+                  <ChevronDown size={16} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => setPlanFilter('all')}>
+                  Todas Empresas
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPlanFilter('enterprise')}>
+                  Plano Enterprise
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPlanFilter('premium')}>
+                  Plano Premium
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPlanFilter('standard')}>
+                  Plano Standard
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setPlanFilter('basic')}>
+                  Plano Basic
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             
-            <Button variant="outline" size="icon">
-              <Filter size={18} />
-            </Button>
-            
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" title="Atualizar dados">
               <RefreshCw size={18} />
             </Button>
           </div>

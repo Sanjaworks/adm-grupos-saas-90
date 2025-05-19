@@ -13,6 +13,9 @@ export interface KnowledgeArticle {
   created_at: string;
   updated_at?: string | null;
   created_by: string;
+  content_type?: 'text' | 'video' | 'file' | null;
+  video_url?: string | null;
+  file_url?: string | null;
 }
 
 export interface ArticleCategory {
@@ -29,10 +32,11 @@ export const getArticles = async (options?: {
   companyId?: string;
   isPublished?: boolean;
   visibility?: 'public' | 'admin' | 'company';
+  contentType?: 'text' | 'video' | 'file';
 }): Promise<KnowledgeArticle[]> => {
   try {
     // Construir a consulta com filtros
-    let query = (supabase as any)
+    let query = supabase
       .from('knowledge_articles')
       .select(`
         *,
@@ -50,6 +54,10 @@ export const getArticles = async (options?: {
     
     if (options?.visibility) {
       query = query.eq('visibility', options.visibility);
+    }
+
+    if (options?.contentType) {
+      query = query.eq('content_type', options.contentType);
     }
     
     if (options?.companyId) {
@@ -74,7 +82,7 @@ export const getArticles = async (options?: {
 // Buscar um artigo específico por ID
 export const getArticleById = async (id: string): Promise<KnowledgeArticle | null> => {
   try {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('knowledge_articles')
       .select(`
         *,
@@ -103,7 +111,7 @@ export const createArticle = async (
   try {
     const now = new Date().toISOString();
     
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('knowledge_articles')
       .insert({
         ...article,
@@ -129,7 +137,7 @@ export const createArticle = async (
 // Atualizar um artigo existente
 export const updateArticle = async (id: string, updates: Partial<KnowledgeArticle>): Promise<KnowledgeArticle | null> => {
   try {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('knowledge_articles')
       .update({
         ...updates,
@@ -154,7 +162,7 @@ export const updateArticle = async (id: string, updates: Partial<KnowledgeArticl
 // Excluir um artigo
 export const deleteArticle = async (id: string): Promise<boolean> => {
   try {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('knowledge_articles')
       .delete()
       .eq('id', id);
@@ -174,7 +182,7 @@ export const deleteArticle = async (id: string): Promise<boolean> => {
 // Buscar categorias de artigos
 export const getCategories = async (): Promise<ArticleCategory[]> => {
   try {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('article_categories')
       .select('*')
       .order('order', { ascending: true });
@@ -194,7 +202,7 @@ export const getCategories = async (): Promise<ArticleCategory[]> => {
 // Criar uma nova categoria
 export const createCategory = async (name: string, description?: string): Promise<ArticleCategory | null> => {
   try {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('article_categories')
       .insert({
         name,
@@ -219,7 +227,7 @@ export const createCategory = async (name: string, description?: string): Promis
 // Atualizar uma categoria
 export const updateCategory = async (id: string, updates: Partial<ArticleCategory>): Promise<ArticleCategory | null> => {
   try {
-    const { data, error } = await (supabase as any)
+    const { data, error } = await supabase
       .from('article_categories')
       .update(updates)
       .eq('id', id)
@@ -241,7 +249,7 @@ export const updateCategory = async (id: string, updates: Partial<ArticleCategor
 // Excluir uma categoria
 export const deleteCategory = async (id: string): Promise<boolean> => {
   try {
-    const { error } = await (supabase as any)
+    const { error } = await supabase
       .from('article_categories')
       .delete()
       .eq('id', id);
@@ -255,5 +263,32 @@ export const deleteCategory = async (id: string): Promise<boolean> => {
   } catch (err) {
     console.error("Erro ao deletar categoria:", err);
     return false;
+  }
+};
+
+// Upload de arquivo para o Storage do Supabase
+export const uploadFile = async (file: File, path: string): Promise<string | null> => {
+  try {
+    const fileName = `${Date.now()}_${file.name}`;
+    const filePath = `${path}/${fileName}`;
+    
+    const { data, error } = await supabase.storage
+      .from('knowledge_files')
+      .upload(filePath, file);
+    
+    if (error) {
+      console.error("Erro ao fazer upload do arquivo:", error);
+      return null;
+    }
+    
+    // Retornar URL pública do arquivo
+    const { data: publicUrl } = supabase.storage
+      .from('knowledge_files')
+      .getPublicUrl(filePath);
+    
+    return publicUrl.publicUrl;
+  } catch (err) {
+    console.error("Erro ao fazer upload do arquivo:", err);
+    return null;
   }
 };
