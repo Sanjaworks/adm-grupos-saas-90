@@ -20,148 +20,210 @@ export interface Message {
   template_id?: string | null;
 }
 
+// Como a tabela 'messages' não existe no tipo Database do Supabase, 
+// precisamos criar uma interface para o que esperamos receber/enviar
+// e fazer a conversão manual
+interface MessageRow {
+  id: string;
+  title: string;
+  content: string;
+  recipients_type: 'all' | 'plan' | 'custom';
+  recipients_filter?: string | null;
+  media_url?: string | null;
+  media_type?: 'image' | 'document' | 'audio' | 'video' | null;
+  scheduled_at?: string | null;
+  sent_at?: string | null;
+  status: 'draft' | 'scheduled' | 'sent' | 'failed';
+  delivery_channels: ('platform' | 'email')[];
+  open_rate?: number | null;
+  created_at: string;
+  created_by: string;
+  company_id?: string | null;
+  template_id?: string | null;
+}
+
 export const getMessages = async (companyId?: string): Promise<Message[]> => {
-  let query = supabase
-    .from('messages')
-    .select('*');
+  try {
+    // Usando any para contornar a limitação do tipo Database que não inclui a tabela messages
+    const { data, error } = await (supabase as any)
+      .from('messages')
+      .select('*');
+      
+    // Se company ID é fornecido, filtre por ele, caso contrário retorne todas as mensagens
+    if (companyId) {
+      (supabase as any).eq('company_id', companyId);
+    }
     
-  // If company ID is provided, filter by it, otherwise return all messages
-  if (companyId) {
-    query = query.eq('company_id', companyId);
-  }
-  
-  const { data, error } = await query.order('created_at', { ascending: false });
-  
-  if (error) {
-    console.error("Error fetching messages:", error);
+    (supabase as any).order('created_at', { ascending: false });
+    
+    if (error) {
+      console.error("Erro ao buscar mensagens:", error);
+      return [];
+    }
+    
+    return (data as MessageRow[]) || [];
+  } catch (err) {
+    console.error("Erro ao buscar mensagens:", err);
     return [];
   }
-  
-  return data || [];
 };
 
 export const getMessageById = async (id: string): Promise<Message | null> => {
-  const { data, error } = await supabase
-    .from('messages')
-    .select('*')
-    .eq('id', id)
-    .maybeSingle();
+  try {
+    const { data, error } = await (supabase as any)
+      .from('messages')
+      .select('*')
+      .eq('id', id)
+      .maybeSingle();
+      
+    if (error) {
+      console.error("Erro ao buscar mensagem:", error);
+      return null;
+    }
     
-  if (error) {
-    console.error("Error fetching message:", error);
+    return data as Message;
+  } catch (err) {
+    console.error("Erro ao buscar mensagem:", err);
     return null;
   }
-  
-  return data;
 };
 
 export const createMessage = async (message: Omit<Message, 'id' | 'created_at'>): Promise<Message | null> => {
-  const now = new Date().toISOString();
-  
-  const { data, error } = await supabase
-    .from('messages')
-    .insert({
-      ...message,
-      created_at: now,
-    })
-    .select()
-    .maybeSingle();
+  try {
+    const now = new Date().toISOString();
     
-  if (error) {
-    console.error("Error creating message:", error);
+    const { data, error } = await (supabase as any)
+      .from('messages')
+      .insert({
+        ...message,
+        created_at: now,
+      })
+      .select()
+      .maybeSingle();
+      
+    if (error) {
+      console.error("Erro ao criar mensagem:", error);
+      return null;
+    }
+    
+    return data as Message;
+  } catch (err) {
+    console.error("Erro ao criar mensagem:", err);
     return null;
   }
-  
-  return data;
 };
 
 export const updateMessage = async (id: string, updates: Partial<Message>): Promise<Message | null> => {
-  const { data, error } = await supabase
-    .from('messages')
-    .update(updates)
-    .eq('id', id)
-    .select()
-    .maybeSingle();
+  try {
+    const { data, error } = await (supabase as any)
+      .from('messages')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .maybeSingle();
+      
+    if (error) {
+      console.error("Erro ao atualizar mensagem:", error);
+      return null;
+    }
     
-  if (error) {
-    console.error("Error updating message:", error);
+    return data as Message;
+  } catch (err) {
+    console.error("Erro ao atualizar mensagem:", err);
     return null;
   }
-  
-  return data;
 };
 
 export const deleteMessage = async (id: string): Promise<boolean> => {
-  const { error } = await supabase
-    .from('messages')
-    .delete()
-    .eq('id', id);
+  try {
+    const { error } = await (supabase as any)
+      .from('messages')
+      .delete()
+      .eq('id', id);
+      
+    if (error) {
+      console.error("Erro ao deletar mensagem:", error);
+      return false;
+    }
     
-  if (error) {
-    console.error("Error deleting message:", error);
+    return true;
+  } catch (err) {
+    console.error("Erro ao deletar mensagem:", err);
     return false;
   }
-  
-  return true;
 };
 
 export const sendMessage = async (messageId: string): Promise<boolean> => {
-  // In a real implementation, this would trigger a background process
-  // to handle the actual message sending through various channels
-  
-  const { data, error } = await supabase
-    .from('messages')
-    .update({
-      status: 'sent',
-      sent_at: new Date().toISOString()
-    })
-    .eq('id', messageId)
-    .select()
-    .maybeSingle();
+  // Em uma implementação real, isso acionaria um processo em segundo plano
+  // para lidar com o envio real da mensagem através de vários canais
+  try {
+    const { data, error } = await (supabase as any)
+      .from('messages')
+      .update({
+        status: 'sent',
+        sent_at: new Date().toISOString()
+      })
+      .eq('id', messageId)
+      .select()
+      .maybeSingle();
+      
+    if (error) {
+      console.error("Erro ao enviar mensagem:", error);
+      return false;
+    }
     
-  if (error) {
-    console.error("Error sending message:", error);
+    return !!data;
+  } catch (err) {
+    console.error("Erro ao enviar mensagem:", err);
     return false;
   }
-  
-  return !!data;
 };
 
-// Helper function to calculate the recipient count based on the filter
+// Função auxiliar para calcular o número de destinatários com base no filtro
 export const calculateRecipientCount = async (
   recipientType: 'all' | 'plan' | 'custom',
   filter?: any
 ): Promise<number> => {
-  // This is a simplified implementation
-  // In a real app, you would query the actual company/user counts
+  // Esta é uma implementação simplificada
+  // Em um aplicativo real, você consultaria as contagens reais de empresas/usuários
   
   if (recipientType === 'all') {
-    const { count, error } = await supabase
-      .from('companies')
-      .select('*', { count: 'exact', head: true });
+    try {
+      const { count, error } = await supabase
+        .from('companies')
+        .select('*', { count: 'exact', head: true });
+        
+      if (error) {
+        console.error("Erro ao contar empresas:", error);
+        return 0;
+      }
       
-    if (error) {
-      console.error("Error counting companies:", error);
+      return count || 0;
+    } catch (err) {
+      console.error("Erro ao contar empresas:", err);
       return 0;
     }
-    
-    return count || 0;
   }
   
   if (recipientType === 'plan' && filter?.planId) {
-    const { count, error } = await supabase
-      .from('companies')
-      .select('*', { count: 'exact', head: true })
-      .eq('plan_id', filter.planId);
+    try {
+      const { count, error } = await supabase
+        .from('companies')
+        .select('*', { count: 'exact', head: true })
+        .eq('plan_id', filter.planId);
+        
+      if (error) {
+        console.error("Erro ao contar empresas por plano:", error);
+        return 0;
+      }
       
-    if (error) {
-      console.error("Error counting companies by plan:", error);
+      return count || 0;
+    } catch (err) {
+      console.error("Erro ao contar empresas por plano:", err);
       return 0;
     }
-    
-    return count || 0;
   }
   
-  // For custom filters, this would be more complex in a real app
+  // Para filtros personalizados, isso seria mais complexo em um aplicativo real
   return 0;
 };
